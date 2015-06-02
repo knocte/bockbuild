@@ -152,7 +152,10 @@ class GtkPackage (GnomeGitPackage):
 
 				# This fixes an issue in where in some situations the user needed
 				# to click a native text entry twice in order to be able to focus it.
-				'patches/gtk/gtknsview-only-unset-first-responder-if-it-is-our-view.patch'
+				'patches/gtk/gtknsview-only-unset-first-responder-if-it-is-our-view.patch',
+
+				# TEST - trying to add an NSUndoManager to GdkQuartzWindow
+				'patches/gtk/gdkquartzwindow-undomanager.patch'
 			])
 
 	def prep (self):

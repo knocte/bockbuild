@@ -1,0 +1,64 @@
+diff --git a/gdk/quartz/GdkQuartzWindow.c b/gdk/quartz/GdkQuartzWindow.c
+index 124427e..819fa34 100644
+--- a/gdk/quartz/GdkQuartzWindow.c
++++ b/gdk/quartz/GdkQuartzWindow.c
+@@ -24,6 +24,16 @@
+ 
+ @implementation GdkQuartzWindow
+ 
++-(GdkQuartzWindow *)init {
++  self = [super init];
++  if (self)
++    {
++      undo_manager = nil;
++    }
++
++  return self;
++}
++
+ -(BOOL)windowShouldClose:(id)sender
+ {
+   GdkWindow *window = [[self contentView] gdkWindow];
+@@ -478,6 +488,20 @@
+   initialResizeLocation.y -= initialResizeFrame.origin.y;
+ }
+ 
++-(NSUndoManager *)undoManager
++{
++  if (!undo_manager)
++    {
++      undo_manager = [[NSUndoManager alloc] init];
++    }
++
++  return undo_manager;
++}
++
++-(NSUndoManager *) windowWillReturnUndoManager: (NSWindow *)sender
++{
++  return [self undoManager];
++}
+ 
+ 
+ static GdkDragContext *current_context = NULL;
+diff --git a/gdk/quartz/GdkQuartzWindow.h b/gdk/quartz/GdkQuartzWindow.h
+index 928f961..47ede41 100644
+--- a/gdk/quartz/GdkQuartzWindow.h
++++ b/gdk/quartz/GdkQuartzWindow.h
+@@ -34,6 +34,7 @@
+   NSPoint initialMoveLocation;
+   NSPoint initialResizeLocation;
+   NSRect  initialResizeFrame;
++  NSUndoManager *undo_manager;
+ }
+ 
+ -(BOOL)isInMove;
+@@ -45,7 +46,8 @@
+ -(void)showAndMakeKey:(BOOL)makeKey;
+ -(void)hide;
+ -(BOOL)makeFirstResponder:(NSResponder *)responder;
+-
++-(NSUndoManager *)undoManager;
++-(NSUndoManager *)windowWillReturnUndoManager:(NSWindow *)sender;
+ @end
+ 
+ 
