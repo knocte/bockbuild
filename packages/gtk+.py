@@ -155,7 +155,8 @@ class GtkPackage (GnomeGitPackage):
 				'patches/gtk/gtknsview-only-unset-first-responder-if-it-is-our-view.patch',
 
 				# TEST - trying to add an NSUndoManager to GdkQuartzWindow
-				'patches/gtk/gdkquartzwindow-undomanager.patch'
+				#'patches/gtk/gdkquartzwindow-undomanager.patch'
+				'patches/gtk/quartz-call-undo-on-cmdz.patch'
 			])
 
 	def prep (self):
