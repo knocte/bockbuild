@@ -28,7 +28,6 @@ class BansheePackages:
 			'pixman.py',
 			'cairo.py',
 			'glib.py',
-			'gobject-introspection.py',
 			'libcroco.py',
 			'pango.py',
 			'atk.py',
