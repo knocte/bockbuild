@@ -25,9 +25,9 @@ class HackGDIPlusPackages:
             'freetype.py',
             'fontconfig.py',
             'pixman.py',
-            'cairo.py',
             'libffi.py',
-            'glib.py'
+            'glib.py',
+            'cairo.py',
         ])
 
         # Mono
