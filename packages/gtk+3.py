@@ -1,6 +1,6 @@
 class GtkPackage (GnomeXzPackage):
 	def __init__ (self):
-		GnomeXzPackage.__init__ (self, 'gtk+', version_major = '3.12', version_minor = '2',
+		GnomeXzPackage.__init__ (self, 'gtk+', version_major = '3.8', version_minor = '9',
 			configure_flags = [
 				'--with-gdktarget=quartz',
 				'--enable-quartz-backend',
