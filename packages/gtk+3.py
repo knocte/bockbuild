@@ -52,7 +52,7 @@ class GtkPackage (GnomeXzPackage):
 				self.local_ld_flags = ['-arch x86_64', '-DX_LOCALE']
 				self.local_gcc_flags = ['-arch x86_64', '-fstrict-aliasing']
 
-		Package.arch_build (self, arch, defaults = False)
+		Package.arch_build (self, arch)
 
 	def install(self):
 		Package.install(self)
