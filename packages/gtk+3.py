@@ -56,15 +56,5 @@ class GtkPackage (GnomeXzPackage):
 
 	def install(self):
 		Package.install(self)
-		if Package.profile.name == 'darwin':
-			self.install_gtkrc ()
-
-	def install_gtkrc(self):
-		gtkrc = self.sources[1]
-		origin = gtkrc if os.path.isabs (gtkrc) else os.path.join (self.package_dir (), gtkrc)
-		destdir = os.path.join (self.prefix, "etc", "gtk-2.0")
-		if not os.path.exists (destdir):
-			os.makedirs(destdir)
-		self.sh('cp %s %s' % (origin, destdir))
 
 GtkPackage ()
