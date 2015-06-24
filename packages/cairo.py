@@ -26,7 +26,8 @@ class CairoPackage (CairoGraphicsXzPackage):
 				'--enable-quartz-font',
 				'--enable-quartz-image',
 				'--disable-xlib',
-				'--without-x'
+				'--without-x',
+				'--enable-gobject=yes',
 			])
 		elif Package.profile.name == 'linux':
 			self.configure_flags.extend ([
