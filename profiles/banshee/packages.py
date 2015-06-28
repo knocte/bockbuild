@@ -48,14 +48,13 @@ class BansheePackages:
 		# banshee-community-extensions
 		self.packages.extend ([
 			# lastfm fingerprint
-			'fftw.py',
-			'libsamplerate.py',
+			#'fftw.py',
+			#'libsamplerate.py',
 
 			# openvp (currently not working)
 			#'libopentk.py',
-			'libsdl.py',
-			'libglade.py',
-
+			#'libsdl.py',
+			#'libglade.py',
 		])
 
 		# exclude package with possible patent/copyright issues
