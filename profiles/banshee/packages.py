@@ -28,12 +28,13 @@ class BansheePackages:
 			'pixman.py',
 			'cairo.py',
 			'glib.py',
+			'gobject-introspection.py',
 			'libcroco.py',
 			'pango.py',
 			'atk.py',
 			'intltool.py',
 			'gdk-pixbuf.py',
-			'gtk+.py',
+			'gtk+3.py',
 			'gconf-dummy.py',
 			'libgpg-error.py',
 			'libgcrypt.py',
@@ -116,7 +117,7 @@ class BansheePackages:
 		# Mono
 		self.packages.extend ([
 			'mono.py',
-			'gtk-sharp.py',
+			'gtk-sharp3.py',
 			'mono-addins.py',
 			'dbus-sharp.py',
 			'dbus-sharp-glib.py',
