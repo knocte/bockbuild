@@ -5,7 +5,8 @@ class LiboggPackage (XiphPackage):
 			name = 'libogg',
                         version = '1.3.0')
 
-                self.configure = 'autoreconf -fi && ./configure --prefix="%{prefix}"'
+               self.package_prefix = self.profile.prefix
+               self.configure = 'autoreconf -fi && ./configure --prefix="%{package_prefix}"'
 
 		# reduce optimization from -O4 to -O3 to allow compilation on Xcode 4.2.1
                 self.sources.append ('patches/libogg-opt.patch')
