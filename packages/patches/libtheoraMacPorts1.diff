@@ -1,0 +1,30 @@
+From 4bedff504fbc8714264c15dc69559f9a3d0a4a22 Mon Sep 17 00:00:00 2001
+From: Tristan Matthews <le.businessman@gmail.com>
+Date: Tue, 11 Feb 2014 18:55:07 +0000
+Subject: [PATCH 1/1] examples: png_sizeof no longer available (since libpng
+ 1.6)
+
+git-svn-id: http://svn.xiph.org/trunk/theora@19088 0101bb08-14d6-0310-b084-bc0e0c8e3800
+---
+ examples/png2theora.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/examples/png2theora.c b/examples/png2theora.c
+index 94a9ab9..281c8ac 100644
+--- a/examples/png2theora.c
++++ b/examples/png2theora.c
+@@ -461,9 +461,9 @@ png_read(const char *pathname, unsigned int *w, unsigned int *h, th_ycbcr_buffer
+   png_set_strip_alpha(png_ptr);
+ 
+   row_data = (png_bytep)png_malloc(png_ptr,
+-    3*height*width*png_sizeof(*row_data));
++    3*height*width*sizeof(*row_data));
+   row_pointers = (png_bytep *)png_malloc(png_ptr,
+-    height*png_sizeof(*row_pointers));
++    height*sizeof(*row_pointers));
+   for(y = 0; y < height; y++) {
+     row_pointers[y] = row_data + y*(3*width);
+   }
+-- 
+2.1.4
+

@@ -12,16 +12,16 @@ class LibTheoraPackage (XiphPackage):
 		if Package.profile.name == 'darwin':
 			self.sources.extend ([
 				# Fix building with libpng 1.6+
-				'https://git.xiph.org/?p=mirrors/theora.git;a=patch;h=4bedff504fbc8714264c15dc69559f9a3d0a4a22;hp=b477a643d80871ec1171a85887140cd154c78455',
+				'patches/libtheoraMacPorts1.diff',
 				# Patch from MacPorts to fix compilation with some versions of xcode's clang
-				'https://trac.macports.org/export/136143/trunk/dports/multimedia/libtheora/files/patch-configure.diff'
-				])
+				'patches/libtheoraMacPorts2.diff'
+			])
 
 	def prep (self):
 		Package.prep (self)
 		if Package.profile.name == 'darwin':
-			self.sh ('patch -p1 --ignore-whitespace < "%{sources[1]}"')
+			self.sh ('patch -p1 --ignore-whitespace < "%{local_sources[1]}"')
 			for p in range (2, len (self.sources)):
-				self.sh ('patch -p0 --ignore-whitespace < "%{sources[' + str (p) + ']}"')
+				self.sh ('patch -p0 --ignore-whitespace < "%{local_sources[' + str (p) + ']}"')
 
 LibTheoraPackage ()
