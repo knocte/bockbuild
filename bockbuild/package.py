@@ -127,6 +127,9 @@ class Package:
 	def _fetch_sources (self, build_root, workspace, resource_dir, source_cache_dir):
 		clean_func = None # what to run if the workspace needs to be redone
 
+		if self.sources == None:
+			return None
+
 		def clean_nop ():
 			pass
 
@@ -140,13 +143,14 @@ class Package:
 
 			# Explicitly reset the working dir to a known directory which has not been deleted
 			# 'git clone' does not work if you are in a directory which has been deleted
-			os.chdir (build_root)
+			self.pushd (build_root)
 			if not os.path.exists (cache_dir):
 				# since this is a fresh cache, the workspace copy is invalid if it exists
 				if os.path.exists (workspace_dir):
 					self.rm (workspace_dir)
 				print 'Cloning git repo: %s' % source_url
 				self.sh ('%' + '{git} clone --mirror "%s" "%s"' % (source_url, cache_dir))
+			self.popd ()
 				
 			log (1, 'Updating cache')
 			self.pushd (cache_dir)
@@ -159,13 +163,12 @@ class Package:
 			if not os.path.exists(workspace_dir):
 				log (1, 'Cloning a fresh workspace')
 				self.sh ('%' + '{git} clone --local --shared 	"%s" "%s"' % (cache_dir, workspace_dir))
-				self.cd (workspace_dir)
 				clean_func = clean_nop
 			else:
 				clean_func = clean_git_workspace
 
 			log (1, 'Updating workspace')
-			self.cd (workspace_dir)
+			self.pushd (workspace_dir)
 
 			if self.git_branch == None:
 				self.sh ('%{git} fetch --all --prune')
@@ -195,6 +198,7 @@ class Package:
 				raise Exception ('Workspace error: Revision is %s, package specifies %s' % (current_revision, self.revision))
 
 			self.revision = current_revision
+			self.popd ()
 			return clean_func
 
 
@@ -211,18 +215,20 @@ class Package:
 		local_sources = []
 		cache = None
 
-		self.cd (build_root)
+		self.pushd (build_root)
 
 		try:
+			the_first_source = True
 			for source in self.sources:
 				#if source.startswith ('http://'):
 				#	raise Exception ('HTTP downloads are no longer allowed: %s', source)
 
+				print "_____________ITERATION first? %s" % the_first_source 
 				if source.startswith (('http://', 'https://', 'ftp://')):
 					archive = source
 					cache = get_download_dest (archive)
 
-					def checkout_archive (archive, cache, workspace):
+					def checkout_archive (archive, cache, workspace, first_source):
 						self.pushd (build_root)
 						if not os.path.exists (cache):
 							# since this is a fresh cache, the workspace copy is invalid if it exists
@@ -231,21 +237,33 @@ class Package:
 							progress ('Downloading: %s' % archive)
 							filename, message = FancyURLopener ().retrieve (archive, cache)
 						if not os.path.exists (workspace):
-							self.extract_archive (cache, False)
+							if first_source:
+								self.extract_archive (cache, False)
+							else:
+								self.extract_archive (cache, False, only_warn_on_error=True)
 							os.utime (workspace, None)
 							clean_func = clean_nop
 						else:
-							clean_func = clean_archive
+							if first_source:
+								clean_func = clean_archive_first
+							else:
+								clean_func = clean_archive_nonfirst
 						if not os.path.exists (workspace):
 							raise Exception ('Archive %s was extracted but not found at workspace path %s' % (cache, workspace))							
 						self.popd ()
 						return clean_func
 
-					def clean_archive ():
+					def clean_archive_first():
+						_clean_archive (True)
+
+					def clean_archive_nonfirst():
+						_clean_archive (False)
+
+					def _clean_archive (first_source):
 						print 'Re-extracting archive: ' + self.name + ' ('+ archive + ')'
 						try:
 							self.rm (workspace)
-							checkout_archive (archive, cache, workspace)
+							checkout_archive (archive, cache, workspace, first_source)
 						except Exception as e:
 							if os.path.exists (cache):
 								self.rm (cache)
@@ -253,12 +271,12 @@ class Package:
 								self.rm (workspace)
 							raise e
 
-					clean_func = checkout_archive (archive, cache, workspace)
+					clean_func = checkout_archive (archive, cache, workspace, the_first_source)
 					local_sources.append (workspace)
 
 				elif source.startswith (('git://','file://', 'ssh://')) or source.endswith ('.git'):
 					cache = get_git_cache_path ()
-					clean_func = checkout (self, source, cache, workspace)
+					clean_func = checkout (self, source, cache, workspace, the_first_source)
 					local_sources.append (workspace)
 				elif os.path.isfile (os.path.join (resource_dir, source)):
 					#local_source_file = os.path.basename (local_source)
@@ -274,6 +292,7 @@ class Package:
 					local_sources.append (os.path.join (resource_dir, source))
 				else:
 					raise Exception ('could not resolve source: %s' % source)
+				the_first_source = False
 
 			self.local_sources = local_sources
 			if len(self.sources) != len(self.local_sources):
@@ -288,15 +307,15 @@ class Package:
 				warn ('Version in configure.ac is %s, package declares %s' % (found_version, package_version))
 			self.version = package_version
 
-			info (self.get_package_string ())
-
-			return clean_func
 		except Exception as e:
-			if os.path.exists (cache):
+			if cache != None and os.path.exists (cache):
 				self.rm (cache)
-			if os.path.exists (workspace):
+			if workspace != None and os.path.exists (workspace):
 				self.rm (workspace)
 			raise
+
+		self.popd ()
+		return clean_func
 
 	def is_successful_build(self, success_file):
 		if not os.path.exists (success_file):
@@ -334,6 +353,9 @@ class Package:
 		return self._fetch_sources (profile.build_root, self.workspace, profile.resource_root, profile.source_cache)
 
 	def start_build (self, install_root, stage_root, arch):			
+
+			info (">>>>>U " + self.get_package_string ())
+
 			profile = Package.profile
 
 			clean_func = retry (self.fetch)
@@ -351,8 +373,9 @@ class Package:
 					run_shell('rsync -a --ignore-existing %s/* %s' % (stagedir, profile.staged_prefix), False)
 
 				else:
-					os.chdir (workspace)
+					self.pushd (workspace)
 					self.install ()
+					self.popd ()
 			else:
 				try:
 					retry (clean_func)
@@ -408,7 +431,7 @@ class Package:
 		if stage_root == None:
 			stage_root = workspace_dir + '-stage'
 
-		self.cd (workspace_dir)
+		self.pushd (workspace_dir)
 		self.stage_root  = stage_root
 		if install_prefix == stage_root:
 			self.staged_prefix = install_prefix
@@ -423,7 +446,8 @@ class Package:
 		self.build ()
 		self.install ()
 
-		self.verbose = False 
+		self.verbose = False
+		self.popd () 
 		return self.staged_prefix
 			
 
@@ -503,7 +527,8 @@ class Package:
 			 self.rm(link)
 		os.symlink (source, link)
 
-	def extract_archive (self, archive, validate_only, overwrite=False):
+	def extract_archive (self, archive, validate_only, overwrite=False, only_warn_on_error=False):
+		print "_____________only_warn_on_error? %s" % only_warn_on_error 
 		self.pushd (self.profile.build_root)
 		self.tar = os.path.join (Package.profile.toolchain_root, 'bin', 'tar')
 		if not os.path.exists (self.tar):
@@ -523,7 +548,16 @@ class Package:
 			command = '%{tar} xf ' + archive
 			if validate_only:
 				command = command + ' -O > /dev/null'
-		self.sh (command)
+
+		try:
+			self.sh (command)
+		except:
+			if only_warn_on_error:
+				warn ('Archive extraction failed for %s' % archive)
+				pass
+			else:
+				raise
+
 		self.popd ()
 
 	def build (self):
